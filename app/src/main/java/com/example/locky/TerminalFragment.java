@@ -45,6 +45,8 @@ public class TerminalFragment extends Fragment implements ServiceConnection, Ser
     private boolean pendingNewline = false;
     private String newline = TextUtil.newline_crlf;
 
+    private String BTresponse;
+
     /*
      * Lifecycle
      */
@@ -122,7 +124,12 @@ public class TerminalFragment extends Fragment implements ServiceConnection, Ser
      */
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+
         View view = inflater.inflate(R.layout.fragment_terminal, container, false);
+
+
+
+
         receiveText = view.findViewById(R.id.receive_text);                          // TextView performance decreases with number of spans
         receiveText.setTextColor(getResources().getColor(R.color.colorRecieveText)); // set as default color to reduce number of spans
         receiveText.setMovementMethod(ScrollingMovementMethod.getInstance());
@@ -182,6 +189,7 @@ public class TerminalFragment extends Fragment implements ServiceConnection, Ser
             BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
             BluetoothDevice device = bluetoothAdapter.getRemoteDevice(deviceAddress);
             status("connecting...");
+            Toast.makeText(getActivity(), "connecting...", Toast.LENGTH_SHORT).show();
             connected = Connected.Pending;
             SerialSocket socket = new SerialSocket(getActivity().getApplicationContext(), device);
             service.connect(socket);
@@ -215,7 +223,7 @@ public class TerminalFragment extends Fragment implements ServiceConnection, Ser
             }
             SpannableStringBuilder spn = new SpannableStringBuilder(msg + '\n');
             spn.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.colorSendText)), 0, spn.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-            receiveText.append(spn);
+            //receiveText.append(spn);//This is sending text...
             service.write(data);
         } catch (Exception e) {
             onSerialIoError(e);
@@ -224,9 +232,10 @@ public class TerminalFragment extends Fragment implements ServiceConnection, Ser
 
     private void receive(byte[] data) {
         if(hexEnabled) {
-            receiveText.append(TextUtil.toHexString(data) + '\n');
+            //receiveText.append(TextUtil.toHexString(data) + '\n'); //hex text?
         } else {
             String msg = new String(data);
+
             if(newline.equals(TextUtil.newline_crlf) && msg.length() > 0) {
                 // don't show CR as ^M if directly before LF
                 msg = msg.replace(TextUtil.newline_crlf, TextUtil.newline_lf);
@@ -238,14 +247,33 @@ public class TerminalFragment extends Fragment implements ServiceConnection, Ser
                 }
                 pendingNewline = msg.charAt(msg.length() - 1) == '\r';
             }
-            receiveText.append(TextUtil.toCaretString(msg, newline.length() != 0));
+
+            //Will open when connect "$AA#" "$AE#", pop up to set password
+            //If someone booked, will wait for password "$BA#" "$BI#"
+            //if password correct, will unlock and reset
+            //Master reset need to send $MM#
+            //Password set of unlock is $PPPPPP#
+            //limit password to 6 digits.
+
+            if(msg.charAt(0) == '$') {
+                //receiveText.setText(TextUtil.toCaretString(msg, newline.length() != 0));
+                BTresponse = msg;
+            } else {
+                //receiveText.append(TextUtil.toCaretString(msg, newline.length() != 0));
+                BTresponse.concat(msg);
+            }
+
+            if((BTresponse.charAt(0) == '$') && (BTresponse.charAt(3) == '#')) {
+                receiveText.append(BTresponse);
+                Toast.makeText(getActivity(), "Complete!", Toast.LENGTH_SHORT).show();
+            }
         }
     }
 
     private void status(String str) {
         SpannableStringBuilder spn = new SpannableStringBuilder(str + '\n');
         spn.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.colorStatusText)), 0, spn.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-        receiveText.append(spn);
+        //receiveText.append(spn); //Status display
     }
 
     /*
@@ -254,6 +282,7 @@ public class TerminalFragment extends Fragment implements ServiceConnection, Ser
     @Override
     public void onSerialConnect() {
         status("connected");
+        Toast.makeText(getActivity(), "connected...", Toast.LENGTH_SHORT).show();
         connected = Connected.True;
     }
 
@@ -261,6 +290,7 @@ public class TerminalFragment extends Fragment implements ServiceConnection, Ser
     public void onSerialConnectError(Exception e) {
         status("connection failed: " + e.getMessage());
         disconnect();
+        Toast.makeText(getActivity(), "Connection failed!", Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -272,6 +302,7 @@ public class TerminalFragment extends Fragment implements ServiceConnection, Ser
     public void onSerialIoError(Exception e) {
         status("connection lost: " + e.getMessage());
         disconnect();
+        Toast.makeText(getActivity(), "Connection lost!", Toast.LENGTH_SHORT).show();
     }
 
 }

@@ -1,4 +1,8 @@
 <resources>
     <string name="app_name">LockyApp</string>
     <string name="devices">Lockers</string>
+    <string name="todo">TODO</string>
+    <string name="TitleText">Enter Password to Unlock:</string>
+    <string name="TitleTextSet">Enter Password to Setup:</string>
+    <string name="button">UNLOCK</string>
 </resources>
