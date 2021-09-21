@@ -1,4 +1,4 @@
 <resources>
-    <string name="app_name">Simple Bluetooth Terminal</string>
-    <string name="devices">Bluetooth Devices</string>
+    <string name="app_name">LockyApp</string>
+    <string name="devices">Lockers</string>
 </resources>

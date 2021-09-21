@@ -43,7 +43,7 @@ public class DevicesFragment extends ListFragment {
                 TextView text1 = view.findViewById(R.id.text1);
                 TextView text2 = view.findViewById(R.id.text2);
                 text1.setText(device.getName());
-                text2.setText(device.getAddress());
+                //text2.setText(device.getAddress());
                 return view;
             }
         };
@@ -95,9 +95,15 @@ public class DevicesFragment extends ListFragment {
     void refresh() {
         listItems.clear();
         if(bluetoothAdapter != null) {
-            for (BluetoothDevice device : bluetoothAdapter.getBondedDevices())
-                if (device.getType() != BluetoothDevice.DEVICE_TYPE_LE)
-                    listItems.add(device);
+            for (BluetoothDevice device : bluetoothAdapter.getBondedDevices()) {
+                if (device.getType() != BluetoothDevice.DEVICE_TYPE_LE) {
+                    if(device.getName().length() == 8){
+                        if(device.getName().substring(0,6).equalsIgnoreCase("LOCKER")) {
+                            listItems.add(device);
+                        }
+                    }
+                }
+            }
         }
         Collections.sort(listItems, DevicesFragment::compareTo);
         listAdapter.notifyDataSetChanged();
