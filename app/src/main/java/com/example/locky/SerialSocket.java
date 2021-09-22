@@ -95,7 +95,7 @@ class SerialSocket implements Runnable {
         }
         connected = true;
         try {
-            byte[] buffer = new byte[1024];
+            byte[] buffer = new byte[1024]; // limit buffer size
             int len;
             //noinspection InfiniteLoopStatement
             while (true) {

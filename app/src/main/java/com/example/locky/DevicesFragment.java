@@ -57,7 +57,7 @@ public class DevicesFragment extends ListFragment {
         View header = getActivity().getLayoutInflater().inflate(R.layout.device_list_header, null, false);
         getListView().addHeaderView(header, null, false);
         setEmptyText("initializing...");
-        Toast.makeText(getActivity(), "initializing...", Toast.LENGTH_SHORT).show();
+        //Toast.makeText(getActivity(), "initializing...", Toast.LENGTH_SHORT).show();
 
         ((TextView) getListView().getEmptyView()).setTextSize(18);
         setListAdapter(listAdapter);

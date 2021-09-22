@@ -21,6 +21,15 @@
         android:textStyle="bold" />
 
     <TextView
+        android:id="@+id/textView2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="16dp"
+        android:text="@string/devicesNO"
+        android:textSize="24sp"
+        android:textStyle="bold" />
+
+    <TextView
         android:id="@+id/receive_text"
         android:layout_width="match_parent"
         android:layout_height="50dp"

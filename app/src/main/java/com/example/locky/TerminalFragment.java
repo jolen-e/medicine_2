@@ -41,6 +41,9 @@ public class TerminalFragment extends Fragment implements ServiceConnection, Ser
     private TextView receiveText;
     private TextView sendText;
     private TextView sendText2;
+    private String lockerNum;
+
+
 
     //private TextUtil.HexWatcher hexWatcher;
 
@@ -51,6 +54,7 @@ public class TerminalFragment extends Fragment implements ServiceConnection, Ser
     private String newline = TextUtil.newline_crlf;
 
     private String BTresponse;
+    private String bufBTresponse;
 
     /*
      * Lifecycle
@@ -141,54 +145,74 @@ public class TerminalFragment extends Fragment implements ServiceConnection, Ser
         receiveText.setTextColor(getResources().getColor(R.color.colorRecieveText)); // set as default color to reduce number of spans
         receiveText.setMovementMethod(ScrollingMovementMethod.getInstance());
 
-
-
-
-
         sendText = view.findViewById(R.id.send_text);
         //hexWatcher = new TextUtil.HexWatcher(sendText);
         //hexWatcher.enable(hexEnabled);
         //sendText.addTextChangedListener(hexWatcher);
         //sendText.setHint(hexEnabled ? "HEX mode" : "");
+        //getActivity().onBackPressed();
 
         View sendBtn = view.findViewById(R.id.send_btn);
-        sendBtn.setOnClickListener(v -> send(('$' + sendText.getText().toString()) + '#'));
+        sendBtn.setOnClickListener(v -> send(sendText.getText().toString()));
 
         view.findViewById(R.id.confirmPWrow).setVisibility(View.GONE);
         view.findViewById(R.id.unlockPWrow).setVisibility(View.GONE);
         view.findViewById(R.id.buttonrow).setVisibility(View.GONE);
+        view.findViewById(R.id.textView2).setVisibility(View.GONE);
 
         receiveText.addTextChangedListener(new TextWatcher() {
             public void afterTextChanged(Editable s) {
 
-                if(BTresponse.length()>0) {
-                    // you can call or do what you want with your EditText here
-                    Toast.makeText(getActivity(), "CHANGED...", Toast.LENGTH_SHORT).show();
-
-                    if (BTresponse.charAt(1) == 'A') {
-                        view.findViewById(R.id.confirmPWrow).setVisibility(View.VISIBLE);
-                        view.findViewById(R.id.unlockPWrow).setVisibility(View.VISIBLE);
-                        view.findViewById(R.id.buttonrow).setVisibility(View.VISIBLE);
-
-                        ((TextView) view.findViewById(R.id.textView)).setText(R.string.TitleTextSet);
-                        ((Button) sendBtn).setText(R.string.buttonSet);
-                        Toast.makeText(getActivity(), "AVAILABLE!", Toast.LENGTH_SHORT).show();
-                    } else if (BTresponse.charAt(1) == 'B') {
-                        view.findViewById(R.id.unlockPWrow).setVisibility(View.VISIBLE);
-                        view.findViewById(R.id.buttonrow).setVisibility(View.VISIBLE);
-                        ((TextView) view.findViewById(R.id.textView)).setText(R.string.TitleText);
-                        ((Button) sendBtn).setText(R.string.button);
-                        Toast.makeText(getActivity(), "BOOKED!", Toast.LENGTH_SHORT).show();
-                    }
-                }
-
-
-                // yourEditText...
             }
 
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
 
-            public void onTextChanged(CharSequence s, int start, int before, int count) {}
+
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                try {
+
+                    if ((receiveText.getText().toString().length() == 4) && (s.length() == 4)) {
+                        receiveText.removeTextChangedListener(this);
+                        String fxBTresponse = receiveText.getText().toString();
+                        Toast.makeText(getActivity(), fxBTresponse, Toast.LENGTH_SHORT).show();
+
+
+                        // you can call or do what you want with your EditText here
+                        Toast.makeText(getActivity(), "BTresponse...", Toast.LENGTH_SHORT).show();
+                        view.findViewById(R.id.textView2).setVisibility(View.VISIBLE);
+                        ((TextView) view.findViewById(R.id.textView2)).setText(lockerNum);
+
+                        if (receiveText.getText().toString().charAt(1) == 'A') {
+                            view.findViewById(R.id.confirmPWrow).setVisibility(View.VISIBLE);
+                            view.findViewById(R.id.unlockPWrow).setVisibility(View.VISIBLE);
+                            view.findViewById(R.id.buttonrow).setVisibility(View.VISIBLE);
+
+                            ((TextView) view.findViewById(R.id.textView)).setText(R.string.TitleTextSet);
+                            ((Button) sendBtn).setText(R.string.buttonSet);
+                            Toast.makeText(getActivity(), "AVAILABLE!", Toast.LENGTH_SHORT).show();
+
+                        } else if (receiveText.getText().toString().charAt(1) == 'B') {
+                            view.findViewById(R.id.unlockPWrow).setVisibility(View.VISIBLE);
+                            view.findViewById(R.id.buttonrow).setVisibility(View.VISIBLE);
+                            ((TextView) view.findViewById(R.id.textView)).setText(R.string.TitleText);
+                            ((Button) sendBtn).setText(R.string.button);
+                            Toast.makeText(getActivity(), "BOOKED!", Toast.LENGTH_SHORT).show();
+
+                        } else if (receiveText.getText().toString().charAt(1) == 'O') {
+                            Toast.makeText(getActivity(), "UNLOCKED!", Toast.LENGTH_SHORT).show();
+
+                        } else if (receiveText.getText().toString().charAt(1) == 'E') {
+                            Toast.makeText(getActivity(), "WRONG PASSWORD!", Toast.LENGTH_SHORT).show();
+
+                        }
+                        receiveText.removeTextChangedListener(this);
+                        receiveText.setText("");
+                        receiveText.addTextChangedListener(this);
+                    }
+                } catch(NumberFormatException e) {
+                    //do whatever you like when value is incorrect
+                }
+            }
         });
 
         return view;
@@ -238,10 +262,14 @@ public class TerminalFragment extends Fragment implements ServiceConnection, Ser
             BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
             BluetoothDevice device = bluetoothAdapter.getRemoteDevice(deviceAddress);
             status("connecting...");
-            Toast.makeText(getActivity(), "connecting...", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getActivity(), "Connecting...", Toast.LENGTH_SHORT).show();
             connected = Connected.Pending;
             SerialSocket socket = new SerialSocket(getActivity().getApplicationContext(), device);
             service.connect(socket);
+            lockerNum = device.getName().toUpperCase();
+
+
+
         } catch (Exception e) {
             onSerialConnectError(e);
         }
@@ -255,8 +283,10 @@ public class TerminalFragment extends Fragment implements ServiceConnection, Ser
     private void send(String str) {
 
         //if the str is master key, reset code $MM#
-        if(str.equals("$000000#")){
+        if(str.equals("000000")){
             str = "$MM#";
+        } else {
+            str = '$' + str + '#';
         }
 
         if(connected != Connected.True) {
@@ -291,6 +321,7 @@ public class TerminalFragment extends Fragment implements ServiceConnection, Ser
         } else {
             String msg = new String(data);
 
+
             if(newline.equals(TextUtil.newline_crlf) && msg.length() > 0) {
                 // don't show CR as ^M if directly before LF
                 msg = msg.replace(TextUtil.newline_crlf, TextUtil.newline_lf);
@@ -310,19 +341,7 @@ public class TerminalFragment extends Fragment implements ServiceConnection, Ser
             //Password set of unlock is $PPPPPP#
             //limit password to 6 digits.
 
-            if(msg.charAt(0) == '$') {
-                //receiveText.setText(TextUtil.toCaretString(msg, newline.length() != 0));
-                BTresponse = msg;
-            } else {
-                //receiveText.append(TextUtil.toCaretString(msg, newline.length() != 0));
-                BTresponse.concat(msg);
-            }
-
-            if((BTresponse.charAt(0) == '$') && (BTresponse.charAt(3) == '#')) {
-                receiveText.setText(BTresponse);
-
-                //Toast.makeText(getActivity(), "Complete!", Toast.LENGTH_SHORT).show();
-            }
+            receiveText.append(msg);
         }
     }
 

@@ -7,4 +7,5 @@
     <string name="button">UNLOCK</string>
     <string name="connecting">CONNECTING...</string>
     <string name="buttonSet">SET PASSWORD</string>
+    <string name="devicesNO">LOCKER</string>
 </resources>
