@@ -192,6 +192,7 @@ public class TerminalFragment extends Fragment implements ServiceConnection, Ser
                             Toast.makeText(getActivity(), "AVAILABLE!", Toast.LENGTH_SHORT).show();
 
                         } else if (receiveText.getText().toString().charAt(1) == 'B') {
+                            view.findViewById(R.id.confirmPWrow).setVisibility(View.GONE);
                             view.findViewById(R.id.unlockPWrow).setVisibility(View.VISIBLE);
                             view.findViewById(R.id.buttonrow).setVisibility(View.VISIBLE);
                             ((TextView) view.findViewById(R.id.textView)).setText(R.string.TitleText);

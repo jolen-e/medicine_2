@@ -38,7 +38,7 @@
         android:gravity="bottom"
         android:scrollbars="vertical"
         android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-        android:visibility="visible" />
+        android:visibility="invisible" />
 
     <View
         android:layout_width="match_parent"
