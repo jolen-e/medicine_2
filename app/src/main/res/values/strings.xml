@@ -3,6 +3,8 @@
     <string name="devices">Lockers</string>
     <string name="todo">TODO</string>
     <string name="TitleText">Enter Password to Unlock:</string>
-    <string name="TitleTextSet">Enter Password to Setup:</string>
+    <string name="TitleTextSet">Set Locker Password:</string>
     <string name="button">UNLOCK</string>
+    <string name="connecting">CONNECTING...</string>
+    <string name="buttonSet">SET PASSWORD</string>
 </resources>

@@ -13,6 +13,7 @@ import android.os.IBinder;
 import android.text.Editable;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
+import android.text.TextWatcher;
 import android.text.method.ScrollingMovementMethod;
 import android.text.style.ForegroundColorSpan;
 import android.view.LayoutInflater;
@@ -21,6 +22,8 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -37,7 +40,9 @@ public class TerminalFragment extends Fragment implements ServiceConnection, Ser
 
     private TextView receiveText;
     private TextView sendText;
-    private TextUtil.HexWatcher hexWatcher;
+    private TextView sendText2;
+
+    //private TextUtil.HexWatcher hexWatcher;
 
     private Connected connected = Connected.False;
     private boolean initialStart = true;
@@ -125,23 +130,67 @@ public class TerminalFragment extends Fragment implements ServiceConnection, Ser
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
-        View view = inflater.inflate(R.layout.fragment_terminal, container, false);
+        View view = inflater.inflate(R.layout.fragment_setup, container, false);
 
+        sendText2 = view.findViewById(R.id.send_text2); // this part is to confirm pw
 
+        view.findViewById(R.id.confirmPWrow).setVisibility(View.GONE);
 
 
         receiveText = view.findViewById(R.id.receive_text);                          // TextView performance decreases with number of spans
         receiveText.setTextColor(getResources().getColor(R.color.colorRecieveText)); // set as default color to reduce number of spans
         receiveText.setMovementMethod(ScrollingMovementMethod.getInstance());
 
+
+
+
+
         sendText = view.findViewById(R.id.send_text);
-        hexWatcher = new TextUtil.HexWatcher(sendText);
-        hexWatcher.enable(hexEnabled);
-        sendText.addTextChangedListener(hexWatcher);
-        sendText.setHint(hexEnabled ? "HEX mode" : "");
+        //hexWatcher = new TextUtil.HexWatcher(sendText);
+        //hexWatcher.enable(hexEnabled);
+        //sendText.addTextChangedListener(hexWatcher);
+        //sendText.setHint(hexEnabled ? "HEX mode" : "");
 
         View sendBtn = view.findViewById(R.id.send_btn);
-        sendBtn.setOnClickListener(v -> send(sendText.getText().toString()));
+        sendBtn.setOnClickListener(v -> send(('$' + sendText.getText().toString()) + '#'));
+
+        view.findViewById(R.id.confirmPWrow).setVisibility(View.GONE);
+        view.findViewById(R.id.unlockPWrow).setVisibility(View.GONE);
+        view.findViewById(R.id.buttonrow).setVisibility(View.GONE);
+
+        receiveText.addTextChangedListener(new TextWatcher() {
+            public void afterTextChanged(Editable s) {
+
+                if(BTresponse.length()>0) {
+                    // you can call or do what you want with your EditText here
+                    Toast.makeText(getActivity(), "CHANGED...", Toast.LENGTH_SHORT).show();
+
+                    if (BTresponse.charAt(1) == 'A') {
+                        view.findViewById(R.id.confirmPWrow).setVisibility(View.VISIBLE);
+                        view.findViewById(R.id.unlockPWrow).setVisibility(View.VISIBLE);
+                        view.findViewById(R.id.buttonrow).setVisibility(View.VISIBLE);
+
+                        ((TextView) view.findViewById(R.id.textView)).setText(R.string.TitleTextSet);
+                        ((Button) sendBtn).setText(R.string.buttonSet);
+                        Toast.makeText(getActivity(), "AVAILABLE!", Toast.LENGTH_SHORT).show();
+                    } else if (BTresponse.charAt(1) == 'B') {
+                        view.findViewById(R.id.unlockPWrow).setVisibility(View.VISIBLE);
+                        view.findViewById(R.id.buttonrow).setVisibility(View.VISIBLE);
+                        ((TextView) view.findViewById(R.id.textView)).setText(R.string.TitleText);
+                        ((Button) sendBtn).setText(R.string.button);
+                        Toast.makeText(getActivity(), "BOOKED!", Toast.LENGTH_SHORT).show();
+                    }
+                }
+
+
+                // yourEditText...
+            }
+
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            public void onTextChanged(CharSequence s, int start, int before, int count) {}
+        });
+
         return view;
     }
 
@@ -170,11 +219,11 @@ public class TerminalFragment extends Fragment implements ServiceConnection, Ser
             builder.create().show();
             return true;
         } else if (id == R.id.hex) {
-            hexEnabled = !hexEnabled;
+            //hexEnabled = !hexEnabled;
             sendText.setText("");
-            hexWatcher.enable(hexEnabled);
-            sendText.setHint(hexEnabled ? "HEX mode" : "");
-            item.setChecked(hexEnabled);
+            //hexWatcher.enable(hexEnabled);
+            //sendText.setHint(hexEnabled ? "HEX mode" : "");
+            //item.setChecked(hexEnabled);
             return true;
         } else {
             return super.onOptionsItemSelected(item);
@@ -204,6 +253,12 @@ public class TerminalFragment extends Fragment implements ServiceConnection, Ser
     }
 
     private void send(String str) {
+
+        //if the str is master key, reset code $MM#
+        if(str.equals("$000000#")){
+            str = "$MM#";
+        }
+
         if(connected != Connected.True) {
             Toast.makeText(getActivity(), "not connected", Toast.LENGTH_SHORT).show();
             return;
@@ -264,8 +319,9 @@ public class TerminalFragment extends Fragment implements ServiceConnection, Ser
             }
 
             if((BTresponse.charAt(0) == '$') && (BTresponse.charAt(3) == '#')) {
-                receiveText.append(BTresponse);
-                Toast.makeText(getActivity(), "Complete!", Toast.LENGTH_SHORT).show();
+                receiveText.setText(BTresponse);
+
+                //Toast.makeText(getActivity(), "Complete!", Toast.LENGTH_SHORT).show();
             }
         }
     }
