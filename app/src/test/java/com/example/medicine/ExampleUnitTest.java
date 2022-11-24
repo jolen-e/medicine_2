@@ -1,4 +1,4 @@
-package com.example.locky;
+package com.example.medicine;
 
 import org.junit.Test;
 

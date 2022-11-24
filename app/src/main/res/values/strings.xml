@@ -1,11 +1,11 @@
 <resources>
-    <string name="app_name">LockyApp</string>
-    <string name="devices">Lockers</string>
+    <string name="app_name">Medicine</string>
+    <string name="devices">Dispenser</string>
     <string name="todo">TODO</string>
-    <string name="TitleText">Enter Password to Unlock:</string>
-    <string name="TitleTextSet">Set Locker Password:</string>
-    <string name="button">UNLOCK</string>
+    <!--<string name="TitleText">Enter Password to Unlock:</string>
+    <string name="TitleTextSet">Set Medicine Password:</string>
+    <string name="button">EXECUTE</string>-->
     <string name="connecting">CONNECTING...</string>
-    <string name="buttonSet">SET PASSWORD</string>
-    <string name="devicesNO">LOCKER</string>
+    <!--<string name="buttonSet">SET PASSWORD</string>-->
+    <string name="devicesNO">MEDICINE</string>
 </resources>

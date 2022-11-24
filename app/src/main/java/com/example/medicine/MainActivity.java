@@ -1,11 +1,16 @@
-package com.example.locky;
+package com.example.medicine;
 
+import android.app.TimePickerDialog;
 import android.os.Bundle;
 import androidx.fragment.app.FragmentManager;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
 import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
+
+import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity implements FragmentManager.OnBackStackChangedListener{
 
@@ -20,7 +25,9 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
             getSupportFragmentManager().beginTransaction().add(R.id.fragment, new DevicesFragment(), "devices").commit();
         else
             onBackStackChanged();
+
     }
+
 
     @Override
     public void onBackStackChanged() {
